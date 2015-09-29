@@ -212,7 +212,7 @@ class Connection
      * Subscribes to an specific event given a subject.
      *
      * @param string   $subject  Message topic.
-     * @param resource $callback Closure to be executed as callback.
+     * @param \Closure $callback Closure to be executed as callback.
      * @return string
      */
     public function subscribe($subject, $callback)
