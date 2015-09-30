@@ -150,11 +150,14 @@ class Connection
      *
      * @return resource
      */
-    private function getStream($address)
+    private function getStream($address, $timeout=null)
     {
-        $fp = stream_socket_client($address, $errno, $errstr, STREAM_CLIENT_CONNECT);
+        if (is_null($timeout)) {
+            $timeout = intval(ini_get('default_socket_timeout'));
+        }
+        $fp = stream_socket_client($address, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
         if (!$fp) {
-            echo '!!!!!!! '.$errstr.' - '.$errno;
+            throw new \Exception($errstr, $errno);
         }
         //stream_set_blocking($fp, 0);
         return $fp;
@@ -175,9 +178,9 @@ class Connection
      *
      * @return void
      */
-    public function connect()
+    public function connect($timeout=null)
     {
-        $this->streamSocket = $this->getStream($this->options->getAddress());
+        $this->streamSocket = $this->getStream($this->options->getAddress(), $timeout);
         $msg = 'CONNECT '.$this->options->toJSON();
         $this->send($msg);
     }
