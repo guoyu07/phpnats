@@ -107,7 +107,6 @@ class Connection
     {
         $this->pings = 0;
         $this->pubs = 0;
-        $this->subscriptions = 0;
         $this->subscriptions = [];
         $this->options = $options;
         if (is_null($options)) {
@@ -148,11 +147,12 @@ class Connection
     /**
      * Returns an stream socket to the desired server.
      *
-     * @param string $address Server url string.
-     *
+     * @param string  $address Server url string.
+     * @param integer $timeout Number of seconds until the connect() system call should timeout.
      * @return resource
+     * @throws \Exception Exception raised if connection fails.
      */
-    private function getStream($address, $timeout=null)
+    private function getStream($address, $timeout = null)
     {
         if (is_null($timeout)) {
             $timeout = intval(ini_get('default_socket_timeout'));
@@ -188,12 +188,14 @@ class Connection
     /**
      * Connect to server.
      *
+     * @param integer $timeout Number of seconds until the connect() system call should timeout.
+     * @throws \Exception Exception raised if connection fails.
      * @return void
      */
-    public function connect($timeout=null)
+    public function connect($timeout = null)
     {
         $this->streamSocket = $this->getStream($this->options->getAddress(), $timeout);
-        $msg = 'CONNECT '.$this->options->toJSON();
+        $msg = 'CONNECT '.$this->options;
         $this->send($msg);
     }
 
@@ -250,6 +252,8 @@ class Connection
     {
         $msg = 'UNSUB '.$sid;
         $this->send($msg);
+
+        unset($this->subscriptions[$sid]);
     }
 
     /**
@@ -283,7 +287,7 @@ class Connection
         } else {
             return new \Exception('not callable');
         }
-
+        
         return;
     }
 
